@@ -1,4 +1,4 @@
-module art_nft::art_nft {
+module 0x0::art_nft {
     use std::string::String;
     use sui::object::{Self as object, UID};
     use sui::transfer;

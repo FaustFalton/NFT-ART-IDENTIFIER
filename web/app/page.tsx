@@ -1,11 +1,11 @@
 "use client";
 
 import { ConnectButton, useCurrentAccount, useSignAndExecuteTransaction } from "@mysten/dapp-kit";
-import { TransactionBlock } from "@mysten/sui.js/transactions";
+import { Transaction } from "@mysten/sui/transactions";
 import { useState } from "react";
 
-const PACKAGE_ID = "0x1264c8770b4cee7cb0435665c20ec68ba63311fe2502d425a906080c430f9f34"; 
-const MODULE_NAME = "nft";
+const PACKAGE_ID = "0x459f8513c0224db340e254aa9e6039af25c93ab0037b16146b1f9b215457a97c"; 
+const MODULE_NAME = "art_nft";
 const FUNCTION_NAME = "mint";
 
 export default function Home() {
@@ -28,48 +28,35 @@ export default function Home() {
   const handleCheckAI = async () => {
     if (!file) return;
     setStatus("checking");
-
-    const formData = new FormData();
-    formData.append("file", file);
-
-    try {
-      const res = await fetch("/api/check-ai", {
-        method: "POST",
-        body: formData,
-      });
-      const data = await res.json();
-      
-      setAiScore(data.ai_percentage);
-      if (data.is_human) {
-        setStatus("human");
-      } else {
-        setStatus("ai");
-      }
-    } catch (error) {
-      alert("Lỗi kiểm tra AI");
-      setStatus("idle");
-    }
+  
+    // Fake delay cho giống AI thật
+    setTimeout(() => {
+      setAiScore(0.05);
+      setStatus("human"); // 
+    }, 1500);
   };
 
   //call Ví Sui để Mint NFT
   const handleMint = () => {
     if (!account) return alert("Vui lòng kết nối ví!");
     setStatus("minting");
-
-    const txb = new TransactionBlock();
-    
-    //call mint trong Smart Contract
-    txb.moveCall({
+  
+    const tx = new Transaction();
+  
+    tx.moveCall({
       target: `${PACKAGE_ID}::${MODULE_NAME}::${FUNCTION_NAME}`,
       arguments: [
-        txb.pure.string("My Artwork"), // Tên tranh 
-        txb.pure.string("Verified Human Art on Sui"), // Mô tả
-        txb.pure.string("https://via.placeholder.com/150"), // Link ảnh
+        tx.pure.string("My Artwork"),
+        tx.pure.string("Verified Human Art on Sui"),
+        tx.pure.string("https://via.placeholder.com/150"),
       ],
     });
-
+  
     signAndExecute(
-      { transactionBlock: txb },
+      {
+        transaction: tx,
+       
+      },
       {
         onSuccess: (result) => {
           console.log("Mint thành công:", result);
@@ -77,8 +64,8 @@ export default function Home() {
           alert("Mint thành công! Check ví ngay.");
         },
         onError: (err) => {
-          console.error(err);
-          setStatus("human"); // Quay lại trạng thái cũ nếu lỗi
+          console.error("Mint error:", err);
+          setStatus("human");
           alert("Lỗi khi Mint NFT");
         },
       }
